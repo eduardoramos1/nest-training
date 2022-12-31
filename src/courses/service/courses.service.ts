@@ -1,41 +1,51 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { UpdateCourseDto } from './../dto/update-course.dto';
+import { CreateCourseDto } from './../dto/create-course.dto';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Course } from '../entities/course.entity';
 
 @Injectable()
 export class CoursesService {
-    private courses : Course[] = [
-        {
-            id: 1,
-            name: 'Computação',
-            description: 'É isso ai',
-            tags: ['xablau.js', 'desgraca.js', "nest.js"]
-        }
-    ]
+    constructor(
+        @InjectRepository(Course) private readonly courseRepository: Repository<Course>){}
 
     findAll() {
-        return this.courses
+        return this.courseRepository.find()
     }
 
     findOne(id: string) {
-        const course = this.courses.find((course) => course.id === Number(id))
+        const course = this.courseRepository.findOneBy({id: +id})
         
-        if(!course) throw new HttpException(`ID ${id} não encontrado`, HttpStatus.NOT_FOUND)
+        if(!course) throw new NotFoundException(`ID ${id} não encontrado`)
 
         return course
     }
 
-    create(createCourseDto: any) {
-        this.courses.push(createCourseDto)
+    create(createCourseDto: CreateCourseDto) {
+        const course = this.courseRepository.create(createCourseDto)
+
+        return this.courseRepository.save(course)
+         
     }
 
-    update(id: string, updateCourseDto: any) {
-        this.courses = this.courses.map(course => {
-            if(course.id === Number(id)) return updateCourseDto
-            return course
+    async update(id: string, updateCourseDto: UpdateCourseDto) {
+        // Encontra no bd o id que quero alterar e retorna um objeto no padrao aceito pelo typoorm
+        const course = await this.courseRepository.preload({
+            id: +id,
+            ...updateCourseDto
         })
+
+        if(!course) throw new NotFoundException(`Este registro não foi encontrado no banco de dados`)
+
+        return this.courseRepository.save(course)
     }
 
-    remove(id: string) {
-        this.courses = this.courses.filter(course => course.id !== Number(id))
+    async remove(id: string) {
+       const course = await this.courseRepository.findOneBy({id: +id})
+       
+       if (!course) throw new NotFoundException(`ID ${id} não encontrado`)
+
+       return this.courseRepository.remove(course)
     }
 }
