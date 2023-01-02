@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm"
+import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm"
+import { Tag } from './tag.entity';
 
 @Entity('courses')
 export class Course {
@@ -11,9 +12,9 @@ export class Course {
     @Column()
     description: string
     
-    // vai salvar o array no bd como json e pode ser nulo
-    @Column('json', {
-        nullable: true
+    @JoinTable()
+    @ManyToMany((type) => Tag, (tag: Tag) => tag.courses, {
+        cascade: true
     })
-    tags: string[]
+    tags: Tag[]
 }

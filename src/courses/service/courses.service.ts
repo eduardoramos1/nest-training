@@ -1,14 +1,17 @@
 import { UpdateCourseDto } from './../dto/update-course.dto';
 import { CreateCourseDto } from './../dto/create-course.dto';
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Course } from '../entities/course.entity';
+import { Tag } from '../entities/tag.entity';
 
 @Injectable()
 export class CoursesService {
     constructor(
-        @InjectRepository(Course) private readonly courseRepository: Repository<Course>){}
+        @InjectRepository(Course) private readonly courseRepository: Repository<Course>,
+        @InjectRepository(Tag) private readonly tagRepository:  Repository<Tag>
+    ){}
 
     findAll() {
         return this.courseRepository.find()
@@ -22,18 +25,29 @@ export class CoursesService {
         return course
     }
 
-    create(createCourseDto: CreateCourseDto) {
-        const course = this.courseRepository.create(createCourseDto)
+    async create(createCourseDto: CreateCourseDto) {
+        const tags = await Promise.all(createCourseDto.tags
+            .map(tagName => this.preloadTagByName(tagName)))
+
+        const course = this.courseRepository.create({
+            ...createCourseDto,
+            tags
+        })
 
         return this.courseRepository.save(course)
          
     }
 
     async update(id: string, updateCourseDto: UpdateCourseDto) {
+        const tags = updateCourseDto.tags && (
+            await Promise.all(updateCourseDto.tags.map((tagName) => this.preloadTagByName(tagName)))
+        )
+
         // Encontra no bd o id que quero alterar e retorna um objeto no padrao aceito pelo typoorm
         const course = await this.courseRepository.preload({
             id: +id,
-            ...updateCourseDto
+            ...updateCourseDto,
+            tags
         })
 
         if(!course) throw new NotFoundException(`Este registro não foi encontrado no banco de dados`)
@@ -47,5 +61,16 @@ export class CoursesService {
        if (!course) throw new NotFoundException(`ID ${id} não encontrado`)
 
        return this.courseRepository.remove(course)
+    }
+
+
+    private async preloadTagByName(name: string ): Promise<Tag> {
+        const tag = await this.tagRepository.findOneBy({name})
+
+        if(tag){
+            return tag
+        }
+
+        return this.tagRepository.create({name})
     }
 }
