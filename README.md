@@ -1,5 +1,5 @@
 ######
-na versao 0.3 do typeorm. Alteraram a forma que que cria migração, agora precisa passar o datasource como paramentro. No caso desse projeto
+Nest training
 ######
 
 > Necessário postgres estar rodando.
