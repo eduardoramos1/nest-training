@@ -1,6 +1,6 @@
-######
+##
 Nest training
-######
+##
 
 > Necessário postgres estar rodando.
 
@@ -9,7 +9,11 @@ Nest training
 Gerar migration
 
 ```
-typeorm migration:generate src/migrations/courseRefactoring -d dist/typeorm.config
+typeorm migration:generate src/migrations/{{migration_name}} -d dist/typeorm.config
+
+ou
+
+npm run migration:generate --name={{migration_name}}
 ```
 
 Rodar Migration
