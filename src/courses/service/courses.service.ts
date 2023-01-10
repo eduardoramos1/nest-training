@@ -22,7 +22,7 @@ export class CoursesService {
     findOne(id: string) {
         const course = this.courseRepository.find({
             where: {
-                id: +id
+                id
             },
             relations: ['tags']
         })  
@@ -52,7 +52,7 @@ export class CoursesService {
 
         // Encontra no bd o id que quero alterar e retorna um objeto no padrao aceito pelo typoorm
         const course = await this.courseRepository.preload({
-            id: +id,
+            id,
             ...updateCourseDto,
             tags
         })
@@ -63,7 +63,7 @@ export class CoursesService {
     }
 
     async remove(id: string) {
-       const course = await this.courseRepository.findOneBy({id: +id})
+       const course = await this.courseRepository.findOneBy({id})
        
        if (!course) throw new NotFoundException(`ID ${id} não encontrado`)
 

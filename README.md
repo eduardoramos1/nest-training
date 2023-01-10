@@ -9,21 +9,36 @@ Nest training
 Gerar migration
 
 ```
-typeorm migration:generate src/migrations/{{migration_name}} -d dist/typeorm.config
-
-ou
-
 npm run migration:generate --name={{migration_name}}
 ```
 
 Rodar Migration
 ```
- typeorm migration:run -d dist/typeorm.config.js
+npm run migration:run
 ```
 
 Reverter migration
 
 ```
- typeorm migration:revert -d dist/typeorm.config.js
+npm run migration:revert
+```
+
+
+
+Rodando no modo docker 
+
+
+```
+    chmod +x .docker/entrypoint.sh
+```
+
+```
+    docker-compose up
+```
+
+para executar migrations no container
+
+```
+    docker-compose exec app bash
 ```
 
