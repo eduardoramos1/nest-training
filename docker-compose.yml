@@ -15,7 +15,7 @@ services:
   db:
     build: .docker/postgres
     container_name: nest-training-db
-    restart: always
+    # restart: always
     tty: true
     ports:
       - "5432:5432"
